@@ -1,3 +1,24 @@
+default role: caseworker
+code: |
+  #code block
+  multi_user = True
+  reviewer_email = dayleader_email
+  role = 'client'
+  if user_logged_in() and user_info().email == reviewer_email: 
+    role = 'reviewer'
+  elif user_logged_in() and user_info().email in caseworker_emails:
+    role = 'caseworker'
+  set_info(user=user, role=role)
+---
+code: |
+  dayleader_names = ["John Doe", "Jocelyn Heewy", "Bob Barker"]
+  dayleader_emails = ["johndoe@test.com", "jocelynheewy@test.com", "bobbarker@test.com"]
+  caseworker_emails = ["patron@ualberta.ca", "brgauche@ualberta.ca", "chase3@ualberta.ca", "klug@ualberta.ca"]
+  
+  for i in dayleader_names:
+    if dayleader_name == dayleader_names[i]:
+      dayleader_email = dayleader_emails[i]
+---
 objects:
   - user: Individual
   - principal: Individual
@@ -53,8 +74,11 @@ fields:
   - Your name: user_name
 ---
 question: What is your dayleaders name?
-fields:
-  - Dayleader name: dayleader_name
+field: dayleader_name 
+choices:
+  - John Doe
+  - Jocelyn Heewy
+  - Bob Barker
 ---
 question: |
   You are now ready to call your principal!
@@ -290,15 +314,6 @@ subject: Response Recieved
 content: |
   Your principal has provided an answer, see attachment and [click here](${ interview_url() }) to approve it.
 
----
-default role: client
-code: |
-  #code block
-  multi_user = True
-  reviewer_email = "patron@ualberta.ca"
-  role = 'client'
-  if user_logged_in() and user_info().email == reviewer_email: role = 'reviewer'
-  set_info(user=user, role=role)
 ---
 event: role_event
 question: Waiting on Another User
