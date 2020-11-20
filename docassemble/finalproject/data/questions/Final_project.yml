@@ -54,7 +54,8 @@ code: |
   else:
     criminal_charges
   court_appearance
-  request_notification_sent
+  if email_button:
+    request_notification_sent
   reviewer_response
   response_notification_sent
     
@@ -356,7 +357,6 @@ attachment:
      [This is  the waiver].
      ${user.signature}
 ---
+continue button field: email_button
 question: Please get your principal to sign the waiver
 subquestion: Click the button below to send the waiver to your principal.
-button:
-  - Send email: request_notification_sent
