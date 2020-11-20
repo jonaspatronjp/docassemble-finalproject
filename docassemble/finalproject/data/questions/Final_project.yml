@@ -33,7 +33,7 @@ code: |
   else:
     criminal_charges
   court_appearance
-  user.signature
+  SLSWaiver
   request_notification_sent
   reviewer_response
   response_notification_sent
@@ -290,55 +290,53 @@ template: response_notification
 subject: Response Recieved
 content: |
   Your principal has provided an answer, see attachment and [click here](${ interview_url() }) to approve it.
-attachment:
-  - name: A hello world document
-    filename: Hello_World
-    description: |
-      A document with a classic message
-    content: |
-      This is the waiver.
-      Here is the principal's signature:
-      ${user.signature}
+
 ---
 default role: client
 code: |
-  # This will run every screen.
-  multi_user = True  # Means turn off the security encryption features
+  #code block
+  multi_user = True
   reviewer_email = "patron@ualberta.ca"
-  role = "client"
-  if (user_logged_in() and (user_info().email == reviewer_email)):
-    role = "reviewer"
+  role = 'client'
+  if user_logged_in() and user_info().email == reviewer_email: role = 'reviewer'
+  set_info(user=user, role=role)
 ---
 event: role_event
-question: Waiting on another user
+question: Waiting on Another User
 subquestion: |
   You are not authorized to look at the next screen of this interview.
   
-  %if "client" in role_needed:
+  % if 'client' in role_needed:
   We are waiting for the client, and you are a reviewer.
-  %elif "reviewer" in role_needed:
-  We are waiting for the reviewer, and you are the client.
-  %endif
+  % elif 'reviewer' in role_needed:
+  We are waiting for the reviewer, and you are the client. Please wait for approval while the advice memo is confirmed.
+  % endif
   
   Please have the other party go to [this link](${ interview_url() }) to continue.
-  
-buttons:
+buttons: 
   - Check: refresh
 ---
+role: client
 question: WAIVER
 subquestion: |
   [add particulars of waiver here]
+  If you agree with the waiver, please sign below.
 signature: user.signature
 ---
 role: reviewer
 question: Response
 subquestion: |
-  The principal signed the waiver. Do you approve?
+  Please review the document generated for the user below. 
+  
+  ${ SLSWaiver }
+  
+  Do you approve?
 yesno: reviewer_response
 ---
 attachment:
   - name: Document
     filename: document
-    variable name: SLSDocument
+    variable name: SLSWaiver
     content: |
      [This is  the waiver].
+     ${user.signature}
