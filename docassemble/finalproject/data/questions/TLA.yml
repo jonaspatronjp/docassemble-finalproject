@@ -1,0 +1,316 @@
+default role: client
+code: |
+  multi_user = True
+  reviewer_email = "jmorris@ualberta.ca"
+  role = 'client'
+  if user_logged_in() and user_info().email == reviewer_email:
+    role = 'reviewer'
+  set_info(user=user, role=role)
+---
+event: role_event
+question: Waiting on Another User
+subquestion: |
+  You are not authorized to look at the next screen of this interview.
+  
+  % if 'client' in role_needed:
+  We are waiting for the client, and you are a reviewer.
+  % elif 'reviewer' in role_needed:
+  We are waiting for the reviewer, and you are the client. Please wait for approval while the advice memo is confirmed.
+  % endif
+  
+  Please have the other party go to [this link](${ interview_url() }) to continue.
+buttons: 
+  - Check: refresh
+---
+template: request_notification
+subject: LAW589 Assignment 6
+content: |
+  A document is ready for verification, [click here](${ interview_url() }) to respond.
+---
+template: response_notification
+subject: Response Received
+content: |
+  Your reviewer has provided an answer, [click here](${ interview_url() }) to view it.
+---
+role: reviewer
+question: Response
+subquestion: |
+  Please review the document generated for the user below. 
+  
+  ${ LaaDocument }
+  
+  Do you approve?
+yesno: reviewer_response
+---
+objects:
+  - user: Individual
+  - user.Assets: Value
+  - user.MonthlyIncome: Value
+  - user.YearlyIncome: Value
+  - cohabitant: DAList.using(object_type=Individual, complete_attribute="complete") 
+  - cohabitant[i].Assets: Value
+  - cohabitant[i].MonthlyIncome: Value
+  - cohabitant[i].YearlyIncome: Value
+---
+mandatory: true
+code:  |
+  # Code Flow Block
+  user.name.first
+  user.email
+  user.Assets.Exists
+  LaaDocument
+  request_notification_sent
+  reviewer_response
+  response_notification_sent
+---
+code: |
+  request_notification_sent = send_email(to=reviewer_email,template=request_notification)
+---
+code: |
+  response_notification_sent = send_email(to=user.email,template=response_notification)
+---
+attachment:
+  - name: Document
+    filename: document
+    variable name: LaaDocument
+    content: |
+     Hello, ${ user }.
+     You have
+     % if user.Assets.Exists:
+     ${ user.Assets.Value } in assets.
+     % else:
+     no assets.
+     % endif
+     % if user.MonthlyIncome.Exists:
+     Your income in the past 30 days was ${ user.MonthlyIncome.Value }.
+     % else:
+     You have had no income in the past 30 days.
+     % endif
+     % if user.YearlyIncome.Exists:
+     Your income in the past year was ${ user.YearlyIncome.Value }.
+     % else:
+     You have had no income in the past year.
+     % endif
+     
+     % if len(cohabitant) > 0:
+       % for i in cohabitant:
+     You live with ${ i }, who has
+         % if i.Assets.Exists:
+     ${ i.Assets.Value } in assets.
+         % else:
+     no assets.
+         % endif
+         % if i.MonthlyIncome.Exists:
+     Their income in the past 30 days was ${ i.MonthlyIncome.Value },
+         % else:
+     They have had no income in the past 30 days,
+         % endif
+         % if i.YearlyIncome.Exists:
+     and their income in the past year was ${ i.YearlyIncome.Value }.
+         % else:
+     and they have had no income in the past year.
+         % endif
+       % endfor
+     % else:
+     You live alone.
+     % endif
+     
+     % if user.FinanciallyEligible:
+     You are financially eligible for legal aid.
+     % elif user.FinanciallyMarginal:
+     You are marginally financially eligible for legal aid
+     % else:
+     You are financially inelligible for legal aid.
+     % endif
+     
+     % if not user.FinanciallyIneligible:
+     % if user.LawyerAfford:
+     You said that you can afford a lawyer.
+     % else:
+     You said that you cannot afford a lawyer.
+       % if user.Lawyer:
+     You said that you have a lawyer,
+         % if user.LawyerActing:
+     and that they are acting for you.
+         % else:
+     but that they are not acting for you.
+         % endif
+       % else:
+     You said that you do not have a lawyer.
+       % endif
+     
+       % if user.MatterAppeal:
+     You said that you are appealing a matter on which you received LAA assistance.
+       % else:
+     You said that you are not appealing a matter on which you you received LAA assistance.
+     
+         % if not user.LivesInAlberta:
+     You said that you do not live in Alberta.
+         % else:
+     You said that you live in Alberta.
+     
+           % if not user.MatterAlberta:
+     You said that your legal matter is not located in Alberta.
+           % else:
+     You said that your legal matter is located in Alberta
+             % if user.MatterFamily:
+     and is a family law matter.
+             % elif user.MatterCriminal:
+     and is a criminal law matter.
+             % else:
+     but is neither a family law nor a criminal law matter.
+             % endif
+           % endif
+         % endif
+       % endif
+     % endif
+     % endif
+     
+     % if user.Qualify:
+     You qualify for legal aid! Please wait for approximately one (1) week for further instructions.
+     % else:
+     Unfortunately, you do not qualify for legal aid.
+     % endif
+     
+     Today's date is ${ format_date(today(), format='EEEE, MMMM d, yyyy') }, which can also be written as ${ format_date(today(), format='yyyy.MM.dd') }.
+---
+mandatory: True
+question: |
+  The advice memo generated from your responses was sent to the reviewer who
+  % if reviewer_response:
+  approved the memo. Please see your advice memo below. You may also [download the document](${ LaaDocument.url_for() }).
+  
+  ${ LaaDocument }
+  % else:
+  did not approve the advice memo.
+  % endif
+---
+generic object: Individual
+question: |
+  What is ${ x.object_possessive('name') }?
+fields:
+  - First Name: x.name.first
+  - Last Name: x.name.last  
+---
+generic object: Individual
+question:  |
+  Please enter ${ x.possessive('financial information') }.
+fields:
+  - Do they have any assets?: x.Assets.Exists
+    datatype: yesnowide
+  - What is the value of the assets?: x.Assets.Value
+    datatype: currency
+    show if: x.Assets.Exists
+    min: 0
+    
+  - Have they made any income in the past 30 days?: x.MonthlyIncome.Exists
+    datatype: yesnowide
+  - What is the value of that income?: x.MonthlyIncome.Value
+    datatype: currency
+    show if: x.MonthlyIncome.Exists
+    min: 0
+    
+  - Have they made any income in the past year?: x.YearlyIncome.Exists
+    datatype: yesnowide
+  - What is the value of that income?: x.YearlyIncome.Value
+    datatype: currency
+    show if: x.YearlyIncome.Exists
+    min: 0
+---
+question: |
+  What is your e-mail address?
+fields:
+  - E-mail: user.email
+    datatype: email
+    required: True
+---
+code: |
+  cohabitant[i].name.first
+  cohabitant[i].Assets.Exists
+  cohabitant[i].complete = True
+---
+code: |
+  if  user.LawyerAfford or (user.Lawyer and user.LawyerActing):
+    user.Represented = True
+  else:
+    user.Represented = False
+---
+code:  |
+  if user.MatterAppeal or (user.LivesInAlberta and user.MatterAlberta and (user.MatterFamily or user.MatterCriminal)):
+    user.Residency = True
+  else:
+    user.Residency = False
+---
+code: |
+  if user.FinanciallyIneligible or user.Represented or not user.Residency:
+    user.Qualify = False
+  else:
+    user.Qualify = True
+---
+code: |
+  MaxMonthlyIncome = [1668, 2066, 2940, 3178, 3416, 3655]
+  MaxYearlyIncome = [20021, 24788, 35275, 38134, 40995, 43855]
+---
+reconsider: True
+code: |
+  user.TotalMonthlyIncome = 0
+  if user.MonthlyIncome.Exists:
+    user.TotalMonthlyIncome += user.MonthlyIncome.Value
+  for i in cohabitant:
+    if i.MonthlyIncome.Exists:
+      user.TotalMonthlyIncome += i.MonthlyIncome.Value
+---
+reconsider: True
+code: |
+  user.TotalYearlyIncome = 0
+  if user.YearlyIncome.Exists:
+    user.TotalYearlyIncome += user.YearlyIncome.Value
+  for i in cohabitant:
+    if i.YearlyIncome.Exists:
+      user.TotalYearlyIncome += i.YearlyIncome.Value
+---
+reconsider: True
+code: |
+  user.FinanciallyIneligible = False
+  user.FinanciallyMarginal = False
+  user.FinanciallyEligible = False
+  if len(cohabitant) > 5:
+    k = 5
+  else:
+    k = len(cohabitant)
+  if user.TotalMonthlyIncome > (MaxMonthlyIncome[k] * 1.1) or user.TotalYearlyIncome > (MaxYearlyIncome[k] * 1.1):
+    user.FinanciallyIneligible = True
+  elif user.TotalMonthlyIncome > (MaxMonthlyIncome[k]) or user.TotalYearlyIncome > (MaxYearlyIncome[k]):
+    user.FinanciallyMarginal = True
+  else:
+    user.FinanciallyEligible = True
+---
+question: Do you live with anyone?
+yesno: cohabitant.there_are_any
+---
+question: Do you live with anyone else?
+yesno: cohabitant.there_is_another
+---
+question: Do you have a lawyer?
+yesno: user.Lawyer
+---
+question: Is that lawyer still acting for you?
+yesno: user.LawyerActing
+---
+question: Can you afford a lawyer?
+yesno: user.LawyerAfford
+---
+question: Are you appealing a decision on which you have previously gotten help from legal aid?
+yesno: user.MatterAppeal
+---
+question: Do you live in Alberta?
+yesno: user.LivesInAlberta
+---
+question: Is your legal matter located in Alberta?
+yesno: user.MatterAlberta
+---
+question: Is your legal matter a family law matter?
+yesno: user.MatterFamily
+---
+question: Is your legal matter a criminal law matter?
+yesno: user.MatterCriminal
