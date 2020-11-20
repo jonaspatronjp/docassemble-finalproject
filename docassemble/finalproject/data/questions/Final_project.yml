@@ -1,0 +1,344 @@
+objects:
+  - user: Individual
+  - principal: Individual
+  - family_members: DAList.using(object_type=Individual, complete_attribute="assets")
+---
+#code flow block
+mandatory: True
+code: |
+  date_of_filing
+  shift_code
+  user_name
+  dayleader_name
+  user_continue
+  principal_name
+  principal_number
+  principal_marital_status
+  principal_living_arrangement
+  principal_student_status
+  youth_matter
+  lawyer_consulted
+  SLS_applied
+  immigration_status
+  employment_income
+  if principal_marital_status == ("Married" or "Common-Law"):
+    spouse_income
+  numberofdependants
+  CRA_info
+  matter_type
+  if matter_type == "Civil":
+    civil_matter
+  elif matter_type == "Family":
+    family_matter
+  else:
+    criminal_charges
+  court_appearance
+  user.signature
+  request_notification_sent
+  reviewer_response
+  response_notification_sent
+    
+---
+question: |
+  Please enter today's date:
+fields:
+  - Date: date_of_filing
+    datatype: date
+---
+question: What is your shift code?
+fields:
+  - Shift Code: shift_code
+---
+question: What is the caseworkers name?
+fields:
+  - Your name: user_name
+---
+question: What is your dayleaders name?
+fields:
+  - Dayleader name: dayleader_name
+---
+question: |
+  You are now ready to call your principal!
+subquestion: |
+  Please hit continue to proceed.
+continue button field: user_continue
+---
+question: |
+  Please enter the principal's information.
+fields:
+  - Name: principal_name
+  - Title: principal_title
+    choices:
+      - Mr.
+      - Ms.
+      - Mrs.
+      - Miss
+  - Address: principal_address
+    required: False
+  - City: principal_city
+  - Province: principal_province
+  - Postal Code: principal_PC
+    required: False
+  - Birthdate: principal_bday
+    datatype: date
+---
+question: |
+  Please enter principal's contact information.
+fields:
+  - Telephone Number: principal_number
+    datatype: integer
+    required: False
+  - Do they have any other telephone numbers?: principal_more_numbers
+    datatype: yesnowide
+  - What is their other number?: principal_second_number
+    datatype: integer
+    show if: principal_more_numbers
+  - Email: principal_email
+    datatype: email
+    required: False
+---
+question: |
+  Please enter the principal's marital status.
+field: principal_marital_status
+choices:
+  - Single
+  - Married
+  - Divorced
+  - Separated
+  - Window/er
+  - Common-Law
+---
+question: |
+  Principal's Living Arrangements.
+subquestion: |
+  Do they live with:
+field: principal_living_arrangement
+choices:
+  - Parents
+  - Alone
+  - Friends/Roommate
+  - Relatives
+  - Alone
+  - Spouse
+  - Shelter
+---
+question: Is the principal a U of A undergrad student?
+field: principal_student_status
+choices:
+  - Yes
+  - No
+  - Graduate
+---
+question: Is this a youth matter?
+yesno: youth_matter
+---
+question: Has the principal consulted a lawyer about this matter?
+fields:
+  - Has a lawyer been consulted: lawyer_consulted
+    datatype: yesnoradio
+  - What happened?: lawyer_consulted_event
+    show if: lawyer_consulted
+---
+question: Has the principal applied to Legal Aid for coverage of this matter?
+fields:
+  - Applied to Legal Aid?: legal_aid_app
+    datatype: yesnoradio
+  - What happened?: legal_aid_app_event
+    show if: lawyer_consulted
+---
+question: Has the principal applied to SLS before?
+fields:
+  - Applied to SLS?: SLS_applied
+    datatype: yesnoradio
+  - When?: SLS_when
+    datatype: date
+    show if: SLS_applied
+  - What happened?: SLS_event
+    show if: SLS_applied
+---
+question: Miscellaneous Questions
+fields:
+  - What is your immigration status?: immigration_status
+    choices:
+      - Canadian Citizen
+      - Permanent Resident
+      - Other
+  - Where did you hear about SLS?: SLS_heard
+  - Do you identify as aboriginal?: aboriginal_status
+  - Will you require an interpreter in court?: interpreter_needed
+    datatype: yesnoradio
+  - Specify Language: interpreter_language
+    show if: interpreter_needed
+---
+question: |
+  Please enter the Prinicipal's Financial Information:
+subquestion: Monthly Income
+fields:
+  - Employment: employment_income
+    datatype: currency
+  - Social Assistance: socialassistance_income
+    datatype: currency
+  - AISH: AISH_income
+    datatype: currency
+  - WCB: WCB_income
+    datatype: currency
+  - Pensions: pension_income
+    datatype: currency
+  - Maintenance/Support: support_income
+    datatype: currency
+  - EI: EI_income
+    datatype: currency    
+---
+question: |
+  Please enter your common law partner/spouse's income.
+fields: 
+  - Income: spouse_income
+    datatype: currency
+---
+question: |
+  How many dependants does the principal have?
+fields:
+  - Dependants: numberofdependants
+    datatype: numeric
+---
+question: Employment Information
+fields:
+  - Has Canada Revenue Agency info been obtained?: CRA_info
+    datatype: yesnoradio
+  - Who is the employer?: employer_info
+  - Income Notes: income_notes
+---
+question: Is the matter a civil, family or criminal law matter?
+fields:
+  - What is the matter?: matter_type
+    choices:
+      - Civil
+      - Family
+      - Criminal
+---
+question: Civil Law Matter
+fields:
+  - Specific Matter: civil_matter
+  - Limitation Period: civil_limitation_period
+  - Opposing Parties: civil_opposing_parties
+  - Opposing Parties Address (if known): civil_opposing_parties_address
+    required: False
+---
+question: Family Law Matter
+fields:
+  - Specific Matter: family_matter
+  - Spouse/Partner: family_partner
+  - Spouse/Partner Address: family_partner_address
+  - Child(ren) with dates of birth: family_children_info
+---
+question: Criminal Law Matter
+fields:
+  - Charge(s) (include Act): criminal_charges
+---
+question: Do you have any upcoming court appearances?
+fields:
+  - Next Court Appearance: court_appearance
+    datatype: yesnoradio
+  - Date: court_appearance_date
+    datatype: date
+    show if: court_appearance
+  - Time: court_appearance_time
+    show if: court_appearance
+  - Room: court_appearance_room
+    show if: court_appearance
+  - Location (city): court_appearance_location
+    show if: court_appearance
+  - Appearance Type: court_appearance_type
+    choices:
+      - Docket
+      - Trial
+      - Other
+    show if: court_appearance
+  - Do you have any previous court appearances?: prev_court_appearance
+    datatype: yesnoradio
+    show if: court_appearance
+  - Date: prev_court_appearance_date
+    datatype: date
+    show if: prev_court_appearance
+  - Time: prev_court_appearance_time
+    show if: prev_court_appearance
+  - Room: prev_court_appearance_room
+    show if: prev_court_appearance
+  - Location (city): prev_court_appearance_location
+    show if: prev_court_appearance
+  - Appearance Type: prev_court_appearance_type
+    choices:
+      - Docket
+      - Trial
+      - Other
+    show if: prev_court_appearance
+  - Previous Convictions/Orders: convictions_orders
+    show if: court_appearance
+---
+code: |
+  request_notification_sent = send_email(to=reviewer_email, template=request_notification)
+---
+code: |
+  response_notification_sent = send_email(to="jonaspatron1@gmail.com", template=response_notification)
+---
+template: request_notification
+subject: New Request
+content: |
+  Your SLS caseworker has sent a waiver, [click here](${ interview_url() }) to view and sign it.
+---
+template: response_notification
+subject: Response Recieved
+content: |
+  Your principal has provided an answer, see attachment and [click here](${ interview_url() }) to approve it.
+attachment:
+  - name: A hello world document
+    filename: Hello_World
+    description: |
+      A document with a classic message
+    content: |
+      This is the waiver.
+      Here is the principal's signature:
+      ${user.signature}
+---
+default role: client
+code: |
+  # This will run every screen.
+  multi_user = True  # Means turn off the security encryption features
+  reviewer_email = "patron@ualberta.ca"
+  role = "client"
+  if (user_logged_in() and (user_info().email == reviewer_email)):
+    role = "reviewer"
+---
+event: role_event
+question: Waiting on another user
+subquestion: |
+  You are not authorized to look at the next screen of this interview.
+  
+  %if "client" in role_needed:
+  We are waiting for the client, and you are a reviewer.
+  %elif "reviewer" in role_needed:
+  We are waiting for the reviewer, and you are the client.
+  %endif
+  
+  Please have the other party go to [this link](${ interview_url() }) to continue.
+  
+buttons:
+  - Check: refresh
+---
+question: WAIVER
+subquestion: |
+  [add particulars of waiver here]
+signature: user.signature
+---
+role: reviewer
+question: Response
+subquestion: |
+  The principal signed the waiver. Do you approve?
+yesno: reviewer_response
+---
+attachment:
+  - name: Document
+    filename: document
+    variable name: SLSDocument
+    content: |
+     [This is  the waiver].
