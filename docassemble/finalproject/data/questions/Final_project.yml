@@ -33,7 +33,6 @@ code: |
   else:
     criminal_charges
   court_appearance
-  SLSWaiver
   request_notification_sent
   reviewer_response
   response_notification_sent
@@ -276,10 +275,10 @@ fields:
     show if: court_appearance
 ---
 code: |
-  request_notification_sent = send_email(to=reviewer_email, template=request_notification)
+  request_notification_sent = send_email(to="jonaspatron1@gmail.com", template=request_notification)
 ---
 code: |
-  response_notification_sent = send_email(to="jonaspatron1@gmail.com", template=response_notification)
+  response_notification_sent = send_email(to=reviewer_email, template=response_notification)
 ---
 template: request_notification
 subject: New Request
@@ -307,7 +306,7 @@ subquestion: |
   You are not authorized to look at the next screen of this interview.
   
   % if 'client' in role_needed:
-  We are waiting for the client, and you are a reviewer.
+  The waiver has been sent and we are waiting for the client. You are a reviewer.
   % elif 'reviewer' in role_needed:
   We are waiting for the reviewer, and you are the client. Please wait for approval while the advice memo is confirmed.
   % endif
