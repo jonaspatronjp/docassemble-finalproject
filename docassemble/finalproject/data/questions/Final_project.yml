@@ -11,11 +11,11 @@ code: |
   set_info(user=user, role=role)
 ---
 code: |
-  dayleader_names = ["John Doe", "Jocelyn Heewy", "Bob Barker"]
-  dayleader_emails = ["johndoe@test.com", "jocelynheewy@test.com", "bobbarker@test.com"]
+  dayleader_names = ["John Doe (Jonas)", "Jocelyn Heewy (Brendin)", "Bob Barker (Chase)", "Chloe Maggots (Spencer)"]
+  dayleader_emails = ["patron@ualberta.ca", "brgauche@ualberta.ca", "chase3@ualberta.ca", "klug@ualberta.ca"]
   caseworker_emails = ["patron@ualberta.ca", "brgauche@ualberta.ca", "chase3@ualberta.ca", "klug@ualberta.ca"]
   
-  for i in dayleader_names:
+  for i in range(len(dayleader_names)):
     if dayleader_name == dayleader_names[i]:
       dayleader_email = dayleader_emails[i]
 ---
@@ -76,9 +76,10 @@ fields:
 question: What is your dayleaders name?
 field: dayleader_name 
 choices:
-  - John Doe
-  - Jocelyn Heewy
-  - Bob Barker
+  - John Doe (Jonas)
+  - Jocelyn Heewy (Brendin)
+  - Bob Barker (Chase)
+  - Chloe Maggots (Spencer)
 ---
 question: |
   You are now ready to call your principal!
@@ -299,7 +300,7 @@ fields:
     show if: court_appearance
 ---
 code: |
-  request_notification_sent = send_email(to="jonaspatron1@gmail.com", template=request_notification)
+  request_notification_sent = send_email(to=principal_email, template=request_notification)
 ---
 code: |
   response_notification_sent = send_email(to=reviewer_email, template=response_notification)
@@ -354,3 +355,8 @@ attachment:
     content: |
      [This is  the waiver].
      ${user.signature}
+---
+question: Please get your principal to sign the waiver
+subquestion: Click the button below to send the waiver to your principal.
+button:
+  - Send email: request_notification_sent
