@@ -12,8 +12,8 @@ code: |
   set_info(user=user, role=role)
 ---
 code: |
-  dayleader_names = ["John Doe (Jonas)", "Jocelyn Heewy (Brendin)", "Bob Barker (Chase)", "Chloe Maggots (Spencer)"]
-  dayleader_emails = ["patron@ualberta.ca", "brgauche@ualberta.ca", "chase3@ualberta.ca", "klug@ualberta.ca"]
+  dayleader_names = ["John Doe", "Jocelyn Heewy", "Bob Barker", "Chloe Maggots"]
+  dayleader_emails = ["law589.group1@gmail.com", "law589.group1@gmail.com", "law589.group1@gmail.com", "law589.group1@gmail.com"]
   caseworker_emails = ["patron@ualberta.ca", "brgauche@ualberta.ca", "chase3@ualberta.ca", "klug@ualberta.ca"]
   
   for i in range(len(dayleader_names)):
@@ -68,7 +68,64 @@ code: |
    # dayleader_approval_email_sent
   #dayleader_response
   #response_notification_sent
+---
+attachments:
+  - name: Document
+    filename: document
+    variable name: Final_document
+    content: |  
     
+      date_of_filing
+      shift_code
+      user_name
+      dayleader_name
+      user_continue
+      principal_name
+      principal_number
+      principal_marital_status
+      principal_living_arrangement
+      principal_student_status
+      youth_matter
+      lawyer_consulted
+      SLS_applied
+      immigration_status
+      employment_income
+      if principal_marital_status == ("Married" or "Common-Law"):
+          spouse_income
+      numberofdependants
+      CRA_info
+      matter_type
+      if matter_type == "Civil":
+        civil_matter
+      elif matter_type == "Family":
+        family_matter
+      else:
+        criminal_charges
+      court_appearance
+      if email_button:
+        request_notification_sent
+      caseworker_signature
+      principal_particulars_info
+      guilty_plea_response
+      if guilty_plea_response:
+        if email_button_guiltyplea:
+          guiltyplea_email_sent
+      caseworker_signature_guiltyplea
+  #if email_button_dayleader:
+   # dayleader_approval_email_sent
+  #dayleader_response
+  #response_notification_sent
+---
+mandatory: True
+question: |
+  The dayleader
+  % if dayleader_response:
+  approved your application. You may [download the document](${ Final_document.url_for() }).
+  
+  ${ Final_document }
+  % else:
+  did not approve your application.
+  % endif
 ---
 question: |
   Please enter today's date:
@@ -87,10 +144,10 @@ fields:
 question: What is your dayleaders name?
 field: dayleader_name 
 choices:
-  - John Doe (Jonas)
-  - Jocelyn Heewy (Brendin)
-  - Bob Barker (Chase)
-  - Chloe Maggots (Spencer)
+  - John Doe
+  - Jocelyn Heewy
+  - Bob Barker
+  - Chloe Maggots
 ---
 question: |
   You are now ready to begin entering your principal's information.
@@ -210,18 +267,25 @@ subquestion: Monthly Income
 fields:
   - Employment: employment_income
     datatype: currency
+    default: 0
   - Social Assistance: socialassistance_income
     datatype: currency
+    default: 0
   - AISH: AISH_income
     datatype: currency
+    default: 0
   - WCB: WCB_income
     datatype: currency
+    default: 0
   - Pensions: pension_income
     datatype: currency
+    default: 0
   - Maintenance/Support: support_income
     datatype: currency
+    default: 0
   - EI: EI_income
-    datatype: currency    
+    datatype: currency 
+    default: 0
 ---
 question: |
   Please enter your common law partner/spouse's income.
