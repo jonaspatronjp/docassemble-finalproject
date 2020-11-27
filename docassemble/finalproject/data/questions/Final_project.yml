@@ -14,7 +14,7 @@ code: |
 code: |
   dayleader_names = ["John Doe", "Jocelyn Heewy", "Bob Barker", "Chloe Maggots"]
   dayleader_emails = ["law589.group1@gmail.com", "law589.group1@gmail.com", "law589.group1@gmail.com", "law589.group1@gmail.com"]
-  caseworker_emails = ["patron@ualberta.ca", "brgauche@ualberta.ca", "chase3@ualberta.ca", "klug@ualberta.ca"]
+  caseworker_emails = ["patron@ualberta.ca", "brgauche@ualberta.ca", "chase3@ualberta.ca", "klug@ualberta.ca", "bgschultz@ualberta.ca"]
   
   for i in range(len(dayleader_names)):
     if dayleader_name == dayleader_names[i]:
@@ -256,6 +256,23 @@ question: |
 fields: 
   - Income: spouse_income
     datatype: currency
+---
+code: 
+  total_income = employment_income + socialassistance_income + AISH_income +   WCB_income + pension_income + support_income + EI_income
+---
+code: 
+  if spouse_income:
+    combined_income = total_income + spouse_income
+  else:
+    combined_income = total_income
+---
+mandatory: true
+question: Income Summary
+subquestion: |
+      The total income for the last 12 months is ${ total_income }
+      
+      The combined household income for the last 12 months is ${ combined_income }
+
 ---
 question: |
   How many dependants does the principal have?
