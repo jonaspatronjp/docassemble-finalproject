@@ -3,12 +3,12 @@ code: |
   #code block
   # TEST EDIT CS
   multi_user = True
-  reviewer_email = dayleader_email
-  role = 'client'
-  if user_logged_in() and user_info().email == reviewer_email: 
-    role = 'reviewer'
+  if user_logged_in() and user_info().email == dayleader_email: 
+    role = 'dayleader'
   elif user_logged_in() and user_info().email in caseworker_emails:
     role = 'caseworker'
+  else:
+    role = 'principal'
   set_info(user=user, role=role)
 ---
 code: |
@@ -57,8 +57,17 @@ code: |
   court_appearance
   if email_button:
     request_notification_sent
-  reviewer_response
-  response_notification_sent
+  caseworker_signature
+  principal_particulars_info
+  guilty_plea_response
+  if guilty_plea_response:
+    if email_button_guiltyplea:
+      guiltyplea_email_sent
+  caseworker_signature_guiltyplea
+  #if email_button_dayleader:
+   # dayleader_approval_email_sent
+  #dayleader_response
+  #response_notification_sent
     
 ---
 question: |
@@ -84,7 +93,7 @@ choices:
   - Chloe Maggots (Spencer)
 ---
 question: |
-  You are now ready to call your principal!
+  You are now ready to begin entering your principal's information.
 subquestion: |
   Please hit continue to proceed.
 continue button field: user_continue
@@ -121,7 +130,6 @@ fields:
     show if: principal_more_numbers
   - Email: principal_email
     datatype: email
-    required: False
 ---
 question: |
   Please enter the principal's marital status.
@@ -305,15 +313,23 @@ code: |
   request_notification_sent = send_email(to=principal_email, template=request_notification)
 ---
 code: |
-  response_notification_sent = send_email(to=reviewer_email, template=response_notification)
+  response_notification_sent = send_email(to=dayleader_email, template=response_notification)
+---
+code: |
+  guiltyplea_email_sent = send_email(to=principal_email, template=guiltyplea_email)
 ---
 template: request_notification
-subject: New Request
+subject: SLS Waiver
 content: |
   Your SLS caseworker has sent a waiver, [click here](${ interview_url() }) to view and sign it.
 ---
+template: guiltyplea_email
+subject: SLS Guilty Plea Waiver
+content: |
+  Your SLS caseworker has sent the guilty plea waiver, [click here](${ interview_url() }) to view and sign it.
+---
 template: response_notification
-subject: Response Recieved
+subject: Signed SLS Waiver
 content: |
   Your principal has provided an answer, see attachment and [click here](${ interview_url() }) to approve it.
 
@@ -323,41 +339,143 @@ question: Waiting on Another User
 subquestion: |
   You are not authorized to look at the next screen of this interview.
   
-  % if 'client' in role_needed:
-  The waiver has been sent and we are waiting for the client. You are a reviewer.
-  % elif 'reviewer' in role_needed:
-  We are waiting for the reviewer, and you are the client. Please wait for approval while the advice memo is confirmed.
+  % if 'principal' in role_needed:
+  We are waiting for the principal. You are a ${role}.
+  % elif 'dayleader' in role_needed:
+  We are waiting for the dayleader, and you are a ${role}.
+  %elif 'caseworker' in role_needed:
+  We are waiting for the caseworker, and you are a ${role}.
   % endif
   
   Please have the other party go to [this link](${ interview_url() }) to continue.
 buttons: 
   - Check: refresh
 ---
-role: client
+role: principal
+continue button field: principal_continue
 question: WAIVER
 subquestion: |
   [add particulars of waiver here]
   If you agree with the waiver, please sign below.
-signature: user.signature
+signature: principal.waiversignature
 ---
-role: reviewer
-question: Response
+role: principal
+question: DECLARATION OF FINANCES
 subquestion: |
-  Please review the document generated for the user below. 
+  [Add particulars of finances section here]
+  Signature for finances goes below.
+signature: principal.financessignature
+---
+role: caseworker #dayleader -- change when done!
+question: |
+  Principal's information as filed by the caseworker.
+subquestion: |
+  Please review the document generated below. 
   
-  ${ SLSWaiver }
+  ${ SLSWaiverFinancesForm }
   
   Do you approve?
-yesno: reviewer_response
+yesno: dayleader_response
+---
+role: caseworker #dayleader -- change when done!
+question: |
+  Waiver and Declaration of Finances as signed by the principal.
+subquestion: |
+  Please sign indicating that you are a witness for the principal's review of the waiver and declaration of finances form. 
+  
+  ${ SLSWaiverFinancesForm }
+
+signature: caseworker_signature    
 ---
 attachment:
   - name: Document
     filename: document
-    variable name: SLSWaiver
+    variable name: SLSWaiverFinancesForm
     content: |
      [This is  the waiver].
-     ${user.signature}
+     ${principal.waiversignature}
+     [This is the Declaration of Finances]
+     ${principal.financessignature}
+---
+attachment:
+  - name: Document
+    filename: document
+    variable name: SLSGuiltyPleaForm
+    content: |
+     [This is  the guilty plea waiver].
+     ${principal.guiltypleasignature}
 ---
 continue button field: email_button
-question: Please get your principal to sign the waiver
+question: Please get your principal to sign the waiver and declaration of finances.
 subquestion: Click the button below to send the waiver to your principal.
+---
+question: Brief Description of Particulars
+fields:
+  - Enter Info Here: principal_particulars_info
+    input type: area
+    rows: 10
+  - Are there any co-accused? (SLS can only represent one): coaccused_response
+    datatype: yesnoradio
+  - Name: coaccussed_name
+    show if: coaccused_response
+  - Address: coaccussed_address
+    show if: coaccused_response
+  - Telephone: coaccussed_telephone
+    show if: coaccused_response
+  - Is there a complainant or complainants?: complainants_response
+    datatype: yesnoradio
+  - Name: complainants_name
+    show if: complainants_response
+  - Address: complainants_address
+    show if: complainants_response
+  - Telephone: coaccussed_telephone
+    show if: complainants_response
+  - Are there any other complainant or complainants?: complainants2_response
+    datatype: yesnoradio
+    show if: complainants_response
+  - Name: complainants2_name
+    show if: complainants2_response
+  - Address: complainants2_address
+    show if: complainants2_response
+  - Telephone: coaccussed2_telephone
+    show if: complainants2_response
+  - Is there a witness?: witness_response
+    datatype: yesnoradio
+  - Name: witness_name
+    show if: witness_response
+  - Address: witness_address
+    show if: witness_response
+  - Telephone: witness_telephone
+    show if: witness_response
+  - Are there any other witnesses?: witness2_response
+    datatype: yesnoradio
+    show if: witness_response
+  - Name: witness2_name
+    show if: witness2_response
+  - Address: witness2_address
+    show if: witness2_response
+  - Telephone: witness2_telephone
+    show if: witness2_response
+---
+question: Would the principal like to sign a guilty plea waiver?
+yesno: guilty_plea_response
+---
+continue button field: email_button_guiltyplea
+question: Please get your principal to sign the guilty plea waiver.
+subquestion: Click the button below to send the waiver to your principal.
+---
+role: principal
+question: GUILTY PLEA WAIVER
+subquestion: |
+  [Enter details of guilty plea waiver here]
+signature: principal.guiltypleasignature
+---
+role: caseworker
+question: |
+  Guilty Plea Waiver as signed by the principal.
+subquestion: |
+  Please sign indicating that you are a witness for the principal's guilty plea waiver. 
+  
+  ${ SLSGuiltyPleaForm }
+
+signature: caseworker_signature_guiltyplea
