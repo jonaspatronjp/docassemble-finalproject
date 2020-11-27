@@ -14,7 +14,9 @@ code: |
 code: |
   dayleader_names = ["John Doe", "Jocelyn Heewy", "Bob Barker", "Chloe Maggots"]
   dayleader_emails = ["law589.group1@gmail.com", "law589.group1@gmail.com", "law589.group1@gmail.com", "law589.group1@gmail.com"]
-  caseworker_emails = ["patron@ualberta.ca", "brgauche@ualberta.ca", "chase3@ualberta.ca", "klug@ualberta.ca", "bgschultz@ualberta.ca"]
+  #gmail password: Law589group1
+  #docassemble password: Michelin2
+  caseworker_emails = ["patron@ualberta.ca", "brgauche@ualberta.ca", "chase3@ualberta.ca", "klug@ualberta.ca", "bgschult@ualberta.ca"]
   
   for i in range(len(dayleader_names)):
     if dayleader_name == dayleader_names[i]:
@@ -132,6 +134,7 @@ fields:
       - Ms.
       - Mrs.
       - Miss
+      - Other
   - Address: principal_address
     required: False
   - City: principal_city
@@ -229,7 +232,7 @@ fields:
     show if: interpreter_needed
 ---
 question: |
-  Please enter the Prinicipal's Financial Information:
+  Please enter the Principal's Financial Information:
 subquestion: Monthly Income
 fields:
   - Employment: employment_income
@@ -372,9 +375,9 @@ content: |
   Your SLS caseworker has sent the guilty plea waiver, [click here](${ interview_url() }) to view and sign it.
 ---
 template: dayleader_approval_email
-subject: Caseworker Completed File
+subject: Caseworker Completed File / ${user_name}
 content: |
-  Your SLS caseworker has sent the principal's completed file, [click here](${ interview_url() }) to view it.
+  Your SLS caseworker (${user_name}) has sent the principal's completed file, [click here](${ interview_url() }) to view it.
 ---
 template: response_notification
 subject: Dayleader Response
@@ -431,7 +434,7 @@ subquestion: |
   Signature for finances goes below.
 signature: principal.financessignature
 ---
-role: caseworker #dayleader -- change when done!
+role: dayleader
 question: |
   Principal's information as filed by the caseworker.
 subquestion: |
