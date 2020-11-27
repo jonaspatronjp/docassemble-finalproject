@@ -64,10 +64,10 @@ code: |
     if email_button_guiltyplea:
       guiltyplea_email_sent
   caseworker_signature_guiltyplea
-  #if email_button_dayleader:
-   # dayleader_approval_email_sent
-  #dayleader_response
-  #response_notification_sent
+  if email_button_dayleader:
+    dayleader_approval_email_sent
+  dayleader_response
+  response_notification_sent
 ---
 attachments:
   - name: Document
@@ -75,46 +75,10 @@ attachments:
     variable name: Final_document
     content: |  
     
-      date_of_filing
-      shift_code
-      user_name
-      dayleader_name
-      user_continue
-      principal_name
-      principal_number
-      principal_marital_status
-      principal_living_arrangement
-      principal_student_status
-      youth_matter
-      lawyer_consulted
-      SLS_applied
-      immigration_status
-      employment_income
-      if principal_marital_status == ("Married" or "Common-Law"):
-          spouse_income
-      numberofdependants
-      CRA_info
-      matter_type
-      if matter_type == "Civil":
-        civil_matter
-      elif matter_type == "Family":
-        family_matter
-      else:
-        criminal_charges
-      court_appearance
-      if email_button:
-        request_notification_sent
-      caseworker_signature
-      principal_particulars_info
-      guilty_plea_response
-      if guilty_plea_response:
-        if email_button_guiltyplea:
-          guiltyplea_email_sent
-      caseworker_signature_guiltyplea
-  #if email_button_dayleader:
-   # dayleader_approval_email_sent
-  #dayleader_response
-  #response_notification_sent
+      This is the final document. All of the information about the principal, including all of the signatures should go here.
+      Date of filing: ${date_of_filing}
+      
+      
 ---
 mandatory: True
 question: |
@@ -377,7 +341,10 @@ code: |
   request_notification_sent = send_email(to=principal_email, template=request_notification)
 ---
 code: |
-  response_notification_sent = send_email(to=dayleader_email, template=response_notification)
+  response_notification_sent = send_email(to=user_info().email, template=response_notification)
+---
+code: |
+  dayleader_approval_email_sent = send_email(to=dayleader_email, template=response_notification)
 ---
 code: |
   guiltyplea_email_sent = send_email(to=principal_email, template=guiltyplea_email)
@@ -392,10 +359,15 @@ subject: SLS Guilty Plea Waiver
 content: |
   Your SLS caseworker has sent the guilty plea waiver, [click here](${ interview_url() }) to view and sign it.
 ---
-template: response_notification
-subject: Signed SLS Waiver
+template: dayleader_approval_email
+subject: Caseworker Completed File
 content: |
-  Your principal has provided an answer, see attachment and [click here](${ interview_url() }) to approve it.
+  Your SLS caseworker has sent the principal's completed file, [click here](${ interview_url() }) to view it.
+---
+template: response_notification
+subject: Dayleader Response
+content: |
+  Your dayleader has provided an answer, see attachment and [click here](${ interview_url() }) to approve it.
 
 ---
 event: role_event
@@ -419,14 +391,31 @@ role: principal
 continue button field: principal_continue
 question: WAIVER
 subquestion: |
-  [add particulars of waiver here]
+  WAIVER
+  I ACKNOWLEDGE THAT THE MEMBERS OF STUDENT LEGAL SERVICES OF EDMONTON ARE NOT   LAWYERS NOR DO THEY PRETEND TO BE LAWYERS
+
+  I will not hold Student Legal Services of Edmonton or any person involved     with Student Legal Services of Edmonton liable for any damages arising from any service which is rendered to me.
+
+  I understand that no charge will be made for any services provided.
+
+  It is my responsibility to advise Student Legal Services of Edmonton of any   change of my address or telephone number.
+
+  If I fail to keep my contact information updated, Student Legal Services of Edmonton reserves the right to close my file after two weeks of a no contact letter being sent to my last known address.
+
+  I understand that I am required to attend every court appearance, and if I do not, Student Legal Services of Edmonton will withdraw from the record.
+
+  Completion of this form does not guarantee that Student Legal Services of Edmonton will assist me. 
+
   If you agree with the waiver, please sign below.
+  
 signature: principal.waiversignature
 ---
 role: principal
 question: DECLARATION OF FINANCES
 subquestion: |
-  [Add particulars of finances section here]
+  DECLARATION OF FINANCES
+  I hereby declare the information provided to Student Legal Services of Edmonton pertaining to monthly income, assets, liabilities and financial circumstances is true. I understand that failure to provide full disclosure may adversely affect the outcome of the services provided and may result in Student Legal Services of Edmonton discontinuing to provide further services.
+
   Signature for finances goes below.
 signature: principal.financessignature
 ---
@@ -436,7 +425,7 @@ question: |
 subquestion: |
   Please review the document generated below. 
   
-  ${ SLSWaiverFinancesForm }
+  ${ Final_document }
   
   Do you approve?
 yesno: dayleader_response
@@ -456,22 +445,52 @@ attachment:
     filename: document
     variable name: SLSWaiverFinancesForm
     content: |
-     [This is  the waiver].
-     ${principal.waiversignature}
-     [This is the Declaration of Finances]
-     ${principal.financessignature}
+      WAIVER
+      I ACKNOWLEDGE THAT THE MEMBERS OF STUDENT LEGAL SERVICES OF EDMONTON ARE NOT LAWYERS NOR DO THEY PRETEND TO BE LAWYERS
+
+      I will not hold Student Legal Services of Edmonton or any person involved with Student Legal Services of Edmonton liable for any damages arising from any service which is rendered to me.
+
+      I understand that no charge will be made for any services provided.
+
+      It is my responsibility to advise Student Legal Services of Edmonton of any change of my address or telephone number.
+
+      If I fail to keep my contact information updated, Student Legal Services of Edmonton reserves the right to close my file after two weeks of a no contact letter being sent to my last known address.
+
+      I understand that I am required to attend every court appearance, and if I do not, Student Legal Services of Edmonton will withdraw from the record.
+
+      Completion of this form does not guarantee that Student Legal Services of Edmonton will assist me. 
+
+      ${principal.waiversignature}
+     
+      DECLARATION OF FINANCES
+      I hereby declare the information provided to Student Legal Services of Edmonton pertaining to monthly income, assets, liabilities and financial circumstances is true. I understand that failure to provide full disclosure may adversely affect the outcome of the services provided and may result in Student Legal Services of Edmonton discontinuing to provide further services.
+
+      ${principal.financessignature}
 ---
 attachment:
   - name: Document
     filename: document
     variable name: SLSGuiltyPleaForm
     content: |
-     [This is  the guilty plea waiver].
+     GUILTY PLEA WAIVER
+     I wish to enter/change my plea on the charge(s) _________________________________ from not guilty to guilty. In accordance with s. 606(1.1) of the Criminal Code of Canada, I have been advised by Student Legal Services of Edmonton of the nature and consequences of such an action.
+      1. I understand that by entering a plea of guilty I am giving up my right to have a trial.
+      2. I understand that entering a guilty plea is final and cannot be changed later.
+      3. I understand that by entering a plea of guilty I am admitting the essential elements of the offence.
+      4. I understand that a plea of guilty may result in a criminal record which may affect my ability to get certain jobs and travel to other countries.
+      5. I understand that the Court has complete control over any sentence imposed following the entering of a guilty plea and it is not bound by any agreement made between Student Legal Services of Edmonton and the Prosecutor. No representation and/or guarantees have been made by Student Legal Services of Edmonton.
+
+      My decision to enter/change my plea was made freely and voluntarily.
+
      ${principal.guiltypleasignature}
 ---
 continue button field: email_button
 question: Please get your principal to sign the waiver and declaration of finances.
 subquestion: Click the button below to send the waiver to your principal.
+---
+continue button field: email_button_dayleader
+question: Please get your dayleader to review the file.
+subquestion: Click the button below to send the file to your dayleader.
 ---
 question: Brief Description of Particulars
 fields:
@@ -531,7 +550,16 @@ subquestion: Click the button below to send the waiver to your principal.
 role: principal
 question: GUILTY PLEA WAIVER
 subquestion: |
-  [Enter details of guilty plea waiver here]
+  GUILTY PLEA WAIVER
+  I wish to enter/change my plea on the charge(s) _________________________________ from not guilty to guilty. In accordance with s. 606(1.1) of the Criminal Code of Canada, I have been advised by Student Legal Services of Edmonton of the nature and consequences of such an action.
+  1. I understand that by entering a plea of guilty I am giving up my right to have a trial.
+  2. I understand that entering a guilty plea is final and cannot be changed later.
+  3. I understand that by entering a plea of guilty I am admitting the essential elements of the offence.
+  4. I understand that a plea of guilty may result in a criminal record which may affect my ability to get certain jobs and travel to other countries.
+  5. I understand that the Court has complete control over any sentence imposed following the entering of a guilty plea and it is not bound by any agreement made between Student Legal Services of Edmonton and the Prosecutor. No representation and/or guarantees have been made by Student Legal Services of Edmonton.
+
+  My decision to enter/change my plea was made freely and voluntarily.
+
 signature: principal.guiltypleasignature
 ---
 role: caseworker
