@@ -77,6 +77,9 @@ attachments:
     
       This is the final document. All of the information about the principal, including all of the signatures should go here.
       Date of filing: ${date_of_filing}
+      The total income for the last 12 months is ${ total_income }
+      
+      The combined household income for the last 12 months is ${ combined_income }
       
       
 ---
@@ -257,22 +260,14 @@ fields:
   - Income: spouse_income
     datatype: currency
 ---
-code: 
+code: |
   total_income = employment_income + socialassistance_income + AISH_income +   WCB_income + pension_income + support_income + EI_income
 ---
-code: 
+code: |
   if spouse_income:
     combined_income = total_income + spouse_income
   else:
     combined_income = total_income
----
-mandatory: true
-question: Income Summary
-subquestion: |
-      The total income for the last 12 months is ${ total_income }
-      
-      The combined household income for the last 12 months is ${ combined_income }
-
 ---
 question: |
   How many dependants does the principal have?
