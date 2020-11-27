@@ -83,6 +83,11 @@ attachments:
       
       The combined household income for the last 12 months is ${ combined_income }
       
+      if guilty_plea_response:
+        ${principal.guiltypleasignature}
+      else:
+        Insert text of guilty plea here with signature line below so that the caseworker can print this off and have the principal sign at a future date.
+      
       
 ---
 mandatory: True
