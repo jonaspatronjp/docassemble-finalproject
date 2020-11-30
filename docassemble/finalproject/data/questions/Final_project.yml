@@ -230,6 +230,7 @@ fields:
       - Other
   - Where did you hear about SLS?: SLS_heard
   - Do you identify as aboriginal?: aboriginal_status
+    datatype: yesnoradio
   - Will you require an interpreter in court?: interpreter_needed
     datatype: yesnoradio
   - Specify Language: interpreter_language
