@@ -184,7 +184,6 @@ choices:
   - Alone
   - Friends/Roommate
   - Relatives
-  - Alone
   - Spouse
   - Shelter
 ---
@@ -243,36 +242,45 @@ fields:
   - Employment: employment_income
     datatype: currency
     default: 0
+    min: 0
   - Social Assistance: socialassistance_income
     datatype: currency
     default: 0
+    min: 0
   - AISH: AISH_income
     datatype: currency
     default: 0
+    min: 0
   - WCB: WCB_income
     datatype: currency
     default: 0
+    min: 0
   - Pensions: pension_income
     datatype: currency
     default: 0
+    min: 0
   - Maintenance/Support: support_income
     datatype: currency
     default: 0
+    min: 0
   - EI: EI_income
     datatype: currency 
     default: 0
+    min: 0
 ---
 question: |
   Please enter your common law partner/spouse's income.
 fields: 
   - Income: spouse_income
     datatype: currency
+    default: 0
+    min: 0
 ---
 code: |
   total_income = employment_income + socialassistance_income + AISH_income +   WCB_income + pension_income + support_income + EI_income
 ---
 code: |
-  if spouse_income:
+  if principal_marital_status == ("Married" or "Common-Law"):
     combined_income = total_income + spouse_income
   else:
     combined_income = total_income
@@ -281,7 +289,9 @@ question: |
   How many dependants does the principal have?
 fields:
   - Dependants: numberofdependants
-    datatype: numeric
+    datatype: integer
+    default: 0
+    min: 0
 ---
 question: Employment Information
 fields:
@@ -317,9 +327,9 @@ question: Criminal Law Matter
 fields:
   - Charge(s) (include Act): criminal_charges
 ---
-question: Do you have any upcoming court appearances?
+question: Court Appearances
 fields:
-  - Next Court Appearance: court_appearance
+  - Do you have an upcoming court appearance?: court_appearance
     datatype: yesnoradio
   - Date: court_appearance_date
     datatype: date
@@ -338,7 +348,6 @@ fields:
     show if: court_appearance
   - Do you have any previous court appearances?: prev_court_appearance
     datatype: yesnoradio
-    show if: court_appearance
   - Date: prev_court_appearance_date
     datatype: date
     show if: prev_court_appearance
@@ -372,17 +381,17 @@ code: |
 template: request_notification
 subject: SLS Waiver
 content: |
-  Your SLS caseworker has sent a waiver, [click here](${ interview_url() }) to view and sign it.
+  Your SLS caseworker has sent you a waiver, [click here](${ interview_url() }) to view and sign it.
 ---
 template: guiltyplea_email
 subject: SLS Guilty Plea Waiver
 content: |
-  Your SLS caseworker has sent the guilty plea waiver, [click here](${ interview_url() }) to view and sign it.
+  Your SLS caseworker has sent you the guilty plea waiver, [click here](${ interview_url() }) to view and sign it.
 ---
 template: dayleader_approval_email
 subject: Caseworker Completed File / ${user_name}
 content: |
-  Your SLS caseworker (${user_name}) has sent the principal's completed file, [click here](${ interview_url() }) to view it.
+  Your SLS caseworker (${user_name}) has sent you the principal's completed file, [click here](${ interview_url() }) to view it.
 ---
 template: response_notification
 subject: Dayleader Response
@@ -561,6 +570,7 @@ fields:
     show if: witness2_response
 ---
 question: Would the principal like to sign a guilty plea waiver?
+subquestion: Add here some info about what the guilty plea waiver is that the caseworker can read out.
 yesno: guilty_plea_response
 ---
 continue button field: email_button_guiltyplea
