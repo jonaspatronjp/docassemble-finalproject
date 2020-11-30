@@ -35,6 +35,13 @@ code: |
   user_name
   dayleader_name
   user_continue
+  matter_type
+  if matter_type == "Civil":
+    civil_matter
+  elif matter_type == "Family":
+    family_matter
+  else:
+    criminal_charges
   principal_name
   principal_number
   principal_marital_status
@@ -49,13 +56,6 @@ code: |
     spouse_income
   numberofdependants
   CRA_info
-  matter_type
-  if matter_type == "Civil":
-    civil_matter
-  elif matter_type == "Family":
-    family_matter
-  else:
-    criminal_charges
   court_appearance
   if email_button:
     request_notification_sent
@@ -148,6 +148,8 @@ fields:
     required: False
   - Birthdate: principal_bday
     datatype: date
+    max: |
+      ${today().minus(years=18)}
 ---
 question: |
   Please enter principal's contact information.
