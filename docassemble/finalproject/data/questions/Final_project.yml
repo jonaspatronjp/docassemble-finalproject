@@ -25,7 +25,7 @@ code: |
 objects:
   - user: Individual
   - principal: Individual
-  - family_members: DAList.using(object_type=Individual, complete_attribute="assets")
+  - charges: DAList
 ---
 #code flow block
 mandatory: True
@@ -41,7 +41,9 @@ code: |
   elif matter_type == "Family":
     family_matter
   else:
-    criminal_charges
+    charges.there_are_any
+    for j in charges:
+      j
   principal_name
   principal_number
   principal_marital_status
@@ -65,7 +67,7 @@ code: |
   if guilty_plea_response:
     if email_button_guiltyplea:
       guiltyplea_email_sent
-  caseworker_signature_guiltyplea
+      caseworker_signature_guiltyplea
   if email_button_dayleader:
     dayleader_approval_email_sent
   dayleader_response
@@ -312,23 +314,36 @@ fields:
       - Criminal
 ---
 question: Civil Law Matter
-fields:
-  - Specific Matter: civil_matter
-  - Limitation Period: civil_limitation_period
-  - Opposing Parties: civil_opposing_parties
-  - Opposing Parties Address (if known): civil_opposing_parties_address
-    required: False
+subquestion: |
+  This is SLS Crim. The phone number for the civil law division of SLS is 
+  Ph: (780) 492-8244. 
+  The address is 11036 88 Avenue NW Edmonton, Alberta  T6G 0Z2.
+buttons:
+  - Exit: exit
+  - Restart: restart
+sets: civil_matter
 ---
 question: Family Law Matter
-fields:
-  - Specific Matter: family_matter
-  - Spouse/Partner: family_partner
-  - Spouse/Partner Address: family_partner_address
-  - Child(ren) with dates of birth: family_children_info
+subquestion: |
+  This is SLS Crim. The phone number for the family law division of SLS is 
+  Ph: (780) 492-8244. 
+  The address is 11036 88 Avenue NW Edmonton, Alberta  T6G 0Z2.
+buttons:
+  - Exit: exit
+  - Restart: restart
+sets: family_matter
+---
+question: Criminal Law Matter
+subquestion: Do you have any charges?
+yesno: charges.there_are_any
 ---
 question: Criminal Law Matter
 fields:
-  - Charge(s) (include Act): criminal_charges
+  - Charge(s) (include Act): charges[i]
+---
+question: Criminal Law Matter
+subquestion: Do you have any other charges?
+yesno: charges.there_is_another
 ---
 question: Court Appearances
 fields:
@@ -505,11 +520,16 @@ attachment:
     variable name: SLSGuiltyPleaForm
     content: |
      GUILTY PLEA WAIVER
-     I wish to enter/change my plea on the charge(s) _________________________________ from not guilty to guilty. In accordance with s. 606(1.1) of the Criminal Code of Canada, I have been advised by Student Legal Services of Edmonton of the nature and consequences of such an action.
+     I wish to enter/change my plea on the charge(s) ${charges} from not guilty to guilty. In accordance with s. 606(1.1) of the Criminal Code of Canada, I have been advised by Student Legal Services of Edmonton of the nature and consequences of such an action.
+      
       1. I understand that by entering a plea of guilty I am giving up my right to have a trial.
+      
       2. I understand that entering a guilty plea is final and cannot be changed later.
+      
       3. I understand that by entering a plea of guilty I am admitting the essential elements of the offence.
+      
       4. I understand that a plea of guilty may result in a criminal record which may affect my ability to get certain jobs and travel to other countries.
+      
       5. I understand that the Court has complete control over any sentence imposed following the entering of a guilty plea and it is not bound by any agreement made between Student Legal Services of Edmonton and the Prosecutor. No representation and/or guarantees have been made by Student Legal Services of Edmonton.
 
       My decision to enter/change my plea was made freely and voluntarily.
@@ -584,11 +604,16 @@ role: principal
 question: GUILTY PLEA WAIVER
 subquestion: |
   GUILTY PLEA WAIVER
-  I wish to enter/change my plea on the charge(s) _________________________________ from not guilty to guilty. In accordance with s. 606(1.1) of the Criminal Code of Canada, I have been advised by Student Legal Services of Edmonton of the nature and consequences of such an action.
+  I wish to enter/change my plea on the charge(s) ${charges} from not guilty to guilty. In accordance with s. 606(1.1) of the Criminal Code of Canada, I have been advised by Student Legal Services of Edmonton of the nature and consequences of such an action.
+  
   1. I understand that by entering a plea of guilty I am giving up my right to have a trial.
+  
   2. I understand that entering a guilty plea is final and cannot be changed later.
+  
   3. I understand that by entering a plea of guilty I am admitting the essential elements of the offence.
+  
   4. I understand that a plea of guilty may result in a criminal record which may affect my ability to get certain jobs and travel to other countries.
+  
   5. I understand that the Court has complete control over any sentence imposed following the entering of a guilty plea and it is not bound by any agreement made between Student Legal Services of Edmonton and the Prosecutor. No representation and/or guarantees have been made by Student Legal Services of Edmonton.
 
   My decision to enter/change my plea was made freely and voluntarily.
