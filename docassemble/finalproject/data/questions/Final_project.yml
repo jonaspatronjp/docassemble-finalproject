@@ -1,7 +1,6 @@
 default role: caseworker
 code: |
   #code block
-  # TEST EDIT CS
   multi_user = True
   if user_logged_in() and user_info().email == dayleader_email: 
     role = 'dayleader'
@@ -76,20 +75,103 @@ code: |
 attachments:
   - name: Document
     filename: document
+    pdf template file: SLS_Crim_Fillable_Form.pdf
     variable name: Final_document
-    content: |  
-    
-      This is the final document. All of the information about the principal, including all of the signatures should go here.
-      Date of filing: ${date_of_filing}
-      The total income for the last 12 months is ${ total_income }
-      
-      The combined household income for the last 12 months is ${ combined_income }
-      
-      if guilty_plea_response:
-        ${principal.guiltypleasignature}
-      else:
-        Insert text of guilty plea here with signature line below so that the caseworker can print this off and have the principal sign at a future date.
-      
+    skip undefined: True
+    fields:  
+      - File Number: "something"
+      - Interview Date: ${ date_of_filing }
+      - Shift Code: ${ shift_code } 
+      - Caseworker Name: ${ user_name }
+      - Dayleader Name: ${ dayleader_name } 
+      - Title: ${ principal_title }
+      - Principal Last Name: "something"
+      - Principal First Name: "something"
+      - Principal Address: ${ principal_address }
+      - Principal Postal Code: ${ principal_PC }
+      - Principal City: ${ principal_city }
+      - Principal Province: ${ principal_province }
+      - Principal Birthdate: ${ principal_bday }
+      - Principal Primary Telephone: ${ principal_number }
+      - Principal Secondary Telephone: ${ principal_second_number }
+      - Principal Email: ${ principal_email }
+      - Marital Status: ${principal_marital_status}
+      - Principal Lives With: ${principal_living_arrangement}
+      - Principal UofA: ${principal_student_status}
+      - Youth Matter: ${youth_matter}
+      - Consulted Lawyer: ${lawyer_consulted}
+      - What Happened Lawyer Consult: ${lawyer_consulted_event}
+      - Applied to Legal Aid: ${ legal_aid_app }
+      - What Happened Legal Aid: ${ legal_aid_app_event }
+      - Applied to SLS: ${SLS_applied}
+      - When Applied to SLS: ${ SLS_when }
+      - What Happened Applied to SLS: ${ SLS_event }
+      - Principal Immigration Status: ${ immigration_status }
+      - Heard About SLS: ${ SLS_heard }
+      - Criminal Charges: ${charges}
+      - Principal Identify as Aboriginal: ${ aboriginal_status }
+      - Interpreter Language: ${ interpreter_language }
+      - Next Court Appearance Date: ${court_appearance_date}
+      - Next Court Appearance Time: ${court_appearance_time}
+      - Next Court Appearance Room: ${court_appearance_room}
+      - Next Court Appearance City: ${court_appearance_location}
+      - Income Employment: ${ employment_income }
+      - Next Court Appearance: ${court_appearance_type}
+      - Next Court Appearance Other: ${}
+      - Income Social Assistance: ${ socialassistance_income }
+      - Income AISH: ${ AISH_income }
+      - Previous Court Appearance 1 Date: ${prev_court_appearance_date}
+      - Previous Court Appearance 1 Time: ${prev_court_appearance_time}
+      - Previous Court Appearance 1 Room: ${prev_court_appearance_room}
+      - Income WCB: ${ WCB_income }
+      - Previous Court Appearance 1 City: ${prev_court_appearance_location}
+      - Income Pensions: ${ pension_income }
+      - Income Maintenance: ${ support_income }
+      - Previous Court Appearance 1 What Happened: ${}
+      - Income EI: ${ EI_income }
+      - Income Total: something
+      - Previous Court Appearance 2 Date: ${}
+      - Previous Court Appearance 2 Time: ${}
+      - Previous Court Appearance 2 Room: ${}
+      - Previous Court Appearance 2 City: ${}
+      - Income 12 Month Total: ${ total_income }
+      - Income Spouse 12 month: ${ spouse_income } 
+      - Previous Court Appearance 2 What Happened: ${}
+      - Income Combined: ${ combined_income } 
+      - Dependants: ${ numberofdependants } 
+      - CRA Info Obtained: ${ CRA_info }
+      - Principal Employer: ${ employer_info }
+      - Previous Convictions: ${convictions_orders}
+      - Income Notes: ${ income_notes }
+      - Criminal Charges for Waiver: ${charges}
+      - Finance Declaration Date: ${ date_of_filing }
+      - Finance Declaration Principal Signature: ${ principal.financessignature }
+      - Finance Declaration Caseworker Signature: ${ caseworker_signature }
+      - Finance Declaration Shift Code: ${ shift_code }
+      - Finance Declaration Caseworker Name: ${ user_name }
+      - Particulars: ${ principal_particulars_info }
+      - Co-Accused 1 Telephone: ${coaccussed_telephone}
+      - Co-Accused 1 Address: ${coaccussed_address}
+      - Co-Accused 1 Name: ${coaccussed_name}
+      - Co-Accused 2 Telephone: ${coaccussed2_telephone}
+      - Co-Accused 2 Address: ${coaccussed2_address}
+      - Co-Accused 2 Name: ${coaccussed2_name}
+      - Complainant 1 Telephone: ${complainants_telephone}
+      - Complainant 1 Address: ${complainants_address}
+      - Complainant 1 Name: ${complainants_name}
+      - Complainant 2 Telephone: ${complainants2_telephone}
+      - Complainant 2 Address: ${complainants2_address}
+      - Complainant 2 Name: ${complainants2_name}
+      - Witness 1 Telephone: ${witness_telephone}
+      - Witness 1 Address: ${witness_address}
+      - Witness 1 Name: ${witness_name}
+      - Witness 2 Telephone: ${witness2_telephone}
+      - Witness 2 Address: ${witness2_address}
+      - Witness 2 Name: ${witness2_name}
+      - Guilty Plea Criminal Charges: ${charges}
+      - Guilty Plea Caseworker Signature: ${ principal.guiltypleasignature }
+      - Guilty Plea Principal Signature: ${ caseworker_signature_guiltyplea }
+      - Guilty Plea Date: ${ date_of_filing }  
       
 ---
 mandatory: True
@@ -141,7 +223,7 @@ fields:
       - Ms.
       - Mrs.
       - Miss
-      - Other
+      - None
   - Address: principal_address
     required: False
   - City: principal_city
@@ -213,7 +295,7 @@ fields:
   - Applied to Legal Aid?: legal_aid_app
     datatype: yesnoradio
   - What happened?: legal_aid_app_event
-    show if: lawyer_consulted
+    show if: legal_aid_app
 ---
 question: Has the principal applied to SLS before?
 fields:
@@ -557,13 +639,22 @@ fields:
     show if: coaccused_response
   - Telephone: coaccussed_telephone
     show if: coaccused_response
+  - Are there any other co-accused? (SLS can only represent one): coaccused2_response
+    datatype: yesnoradio
+    show if: coaccused_response
+  - Name: coaccussed2_name
+    show if: coaccused2_response
+  - Address: coaccussed2_address
+    show if: coaccused2_response
+  - Telephone: coaccussed2_telephone
+    show if: coaccused2_response
   - Is there a complainant or complainants?: complainants_response
     datatype: yesnoradio
   - Name: complainants_name
     show if: complainants_response
   - Address: complainants_address
     show if: complainants_response
-  - Telephone: coaccussed_telephone
+  - Telephone: complainants_telephone
     show if: complainants_response
   - Are there any other complainant or complainants?: complainants2_response
     datatype: yesnoradio
@@ -572,7 +663,7 @@ fields:
     show if: complainants2_response
   - Address: complainants2_address
     show if: complainants2_response
-  - Telephone: coaccussed2_telephone
+  - Telephone: complainants2_telephone
     show if: complainants2_response
   - Is there a witness?: witness_response
     datatype: yesnoradio
