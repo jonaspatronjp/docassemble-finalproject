@@ -50,11 +50,14 @@ code: |
   principal_student_status
   youth_matter
   lawyer_consulted
+  legal_aid_app
   SLS_applied
   immigration_status
   employment_income
   if principal_marital_status == ("Married" or "Common-Law"):
     spouse_income
+  total_income
+  combined_income
   numberofdependants
   CRA_info
   court_appearance
@@ -85,8 +88,7 @@ attachments:
       - Caseworker Name: ${ user_name }
       - Dayleader Name: ${ dayleader_name } 
       - Title: ${ principal_title }
-      - Principal Last Name: "something"
-      - Principal First Name: "something"
+      - Principal Name: ${ principal_name }
       - Principal Address: ${ principal_address }
       - Principal Postal Code: ${ principal_PC }
       - Principal City: ${ principal_city }
@@ -117,7 +119,7 @@ attachments:
       - Next Court Appearance City: ${court_appearance_location}
       - Income Employment: ${ employment_income }
       - Next Court Appearance: ${court_appearance_type}
-      - Next Court Appearance Other: ${}
+      - Next Court Appearance Other: ${ court_appearance_type_other }
       - Income Social Assistance: ${ socialassistance_income }
       - Income AISH: ${ AISH_income }
       - Previous Court Appearance 1 Date: ${prev_court_appearance_date}
@@ -127,17 +129,17 @@ attachments:
       - Previous Court Appearance 1 City: ${prev_court_appearance_location}
       - Income Pensions: ${ pension_income }
       - Income Maintenance: ${ support_income }
-      - Previous Court Appearance 1 What Happened: ${}
+      - Previous Court Appearance 1 What Happened: ${prev_court_what_happened}
       - Income EI: ${ EI_income }
-      - Income Total: something
-      - Previous Court Appearance 2 Date: ${}
-      - Previous Court Appearance 2 Time: ${}
-      - Previous Court Appearance 2 Room: ${}
-      - Previous Court Appearance 2 City: ${}
-      - Income 12 Month Total: ${ total_income }
-      - Income Spouse 12 month: ${ spouse_income } 
-      - Previous Court Appearance 2 What Happened: ${}
-      - Income Combined: ${ combined_income } 
+      - Income Total: ${ total_income }
+      - Previous Court Appearance 2 Date: ${prev_court_appearance_date2}
+      - Previous Court Appearance 2 Time: ${prev_court_appearance_time2}
+      - Previous Court Appearance 2 Room: ${prev_court_appearance_room2}
+      - Previous Court Appearance 2 City: ${prev_court_appearance_location2}
+      - Income 12 Month Total: ${ total_income * 12 }
+      - Income Spouse 12 month: ${ spouse_income * 12 } 
+      - Previous Court Appearance 2 What Happened: ${prev_court_what_happened2}
+      - Income Combined: ${ combined_income * 12 } 
       - Dependants: ${ numberofdependants } 
       - CRA Info Obtained: ${ CRA_info }
       - Principal Employer: ${ employer_info }
@@ -214,7 +216,7 @@ subquestion: |
 continue button field: user_continue
 ---
 question: |
-  Please enter the principal's information.
+  Please enter the principal's information including their first and last name.
 fields:
   - Name: principal_name
   - Title: principal_title
@@ -223,7 +225,7 @@ fields:
       - Ms.
       - Mrs.
       - Miss
-      - None
+      - No Title
   - Address: principal_address
     required: False
   - City: principal_city
@@ -257,7 +259,7 @@ choices:
   - Married
   - Divorced
   - Separated
-  - Window/er
+  - Widow/er
   - Common-Law
 ---
 question: |
@@ -268,7 +270,7 @@ field: principal_living_arrangement
 choices:
   - Parents
   - Alone
-  - Friends/Roommate
+  - Friends/Roomate
   - Relatives
   - Spouse
   - Shelter
@@ -356,7 +358,7 @@ fields:
     min: 0
 ---
 question: |
-  Please enter your common law partner/spouse's income.
+  Please enter your common-law partner/spouse's montly income.
 fields: 
   - Income: spouse_income
     datatype: currency
@@ -440,12 +442,16 @@ fields:
     show if: court_appearance
   - Location (city): court_appearance_location
     show if: court_appearance
-  - Appearance Type: court_appearance_type
+  - Appearance type: court_appearance_type
+    show if: court_appearance
     choices:
       - Docket
       - Trial
       - Other
-    show if: court_appearance
+  - Other appearance type : court_appearance_type_other
+    show if:
+      variable: court_appearance_type
+      is: Other
   - Do you have any previous court appearances?: prev_court_appearance
     datatype: yesnoradio
   - Date: prev_court_appearance_date
@@ -457,14 +463,24 @@ fields:
     show if: prev_court_appearance
   - Location (city): prev_court_appearance_location
     show if: prev_court_appearance
-  - Appearance Type: prev_court_appearance_type
-    choices:
-      - Docket
-      - Trial
-      - Other
+  - What happened? (One line): prev_court_what_happened
     show if: prev_court_appearance
-  - Previous Convictions/Orders: convictions_orders
-    show if: court_appearance
+  - Do you have any other previous court appearances?: prev_court_appearance2
+    datatype: yesnoradio
+    show if: prev_court_appearance
+  - Date: prev_court_appearance_date2
+    datatype: date
+    show if: prev_court_appearance2
+  - Time: prev_court_appearance_time2
+    show if: prev_court_appearance2
+  - Room: prev_court_appearance_room2
+    show if: prev_court_appearance2
+  - Location (city): prev_court_appearance_location2
+    show if: prev_court_appearance2
+  - What happened? (One line): prev_court_what_happened2
+    show if: prev_court_appearance2
+  - Please list any previous convictions or orders: convictions_orders
+    show if: prev_court_appearance
 ---
 code: |
   request_notification_sent = send_email(to=principal_email, template=request_notification)
