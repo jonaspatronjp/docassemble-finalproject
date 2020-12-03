@@ -33,6 +33,7 @@ code: |
   shift_code
   user_name
   dayleader_name
+  file_number
   user_continue
   matter_type
   if matter_type == "Civil":
@@ -54,7 +55,7 @@ code: |
   SLS_applied
   immigration_status
   employment_income
-  if principal_marital_status == ("Married" or "Common-Law"):
+  if principal_marital_status == ("Common-Law" or "Married"):
     spouse_income
   total_income
   combined_income
@@ -184,7 +185,12 @@ question: |
   
   ${ Final_document }
   % else:
-  did not approve your application.
+  did not approve your application. You may [download the document](${ Final_document.url_for() }). It is an editable pdf should you need to make changes.
+  
+  %if dayleader_response_reasons_yes:
+  The dayleader gave the following reasons for not approving the application:
+  ${dayleader_response_reasons}
+  %endif
   % endif
 ---
 question: |
@@ -208,6 +214,10 @@ choices:
   - Jocelyn Heewy
   - Bob Barker
   - Chloe Maggots
+---
+question: What is the file number?
+fields:
+  - file number: file_number
 ---
 question: |
   You are now ready to begin entering your principal's information.
@@ -358,7 +368,7 @@ fields:
     min: 0
 ---
 question: |
-  Please enter your common-law partner/spouse's montly income.
+  Please enter your common-law partner/spouse's monthly income.
 fields: 
   - Income: spouse_income
     datatype: currency
@@ -512,7 +522,7 @@ content: |
 template: response_notification
 subject: Dayleader Response
 content: |
-  Your dayleader has provided an answer, see attachment and [click here](${ interview_url() }) to approve it.
+  Your dayleader has provided an answer, see attachment and [click here](${ interview_url() }) to view it.
 
 ---
 event: role_event
@@ -551,9 +561,10 @@ subquestion: |
 
   Completion of this form does not guarantee that Student Legal Services of Edmonton will assist me. 
 
-  If you agree with the waiver, please sign below.
+  If you agree with the waiver, please sign below by entering your initials.
   
-signature: principal.waiversignature
+fields:
+  - signature: principal.waiversignature
 ---
 role: principal
 question: DECLARATION OF FINANCES
@@ -561,8 +572,10 @@ subquestion: |
   DECLARATION OF FINANCES
   I hereby declare the information provided to Student Legal Services of Edmonton pertaining to monthly income, assets, liabilities and financial circumstances is true. I understand that failure to provide full disclosure may adversely affect the outcome of the services provided and may result in Student Legal Services of Edmonton discontinuing to provide further services.
 
-  Signature for finances goes below.
-signature: principal.financessignature
+  Please sign below by entering your initials
+
+fields:
+  - signature: principal.financessignature
 ---
 role: dayleader
 question: |
@@ -572,18 +585,29 @@ subquestion: |
   
   ${ Final_document }
   
-  Do you approve?
-yesno: dayleader_response
+fields:
+  - Do you approve?: dayleader_response
+    datatype: yesnoradio
+  - Would you like to give reasons for not approving?: dayleader_response_reasons_yes
+    datatype: yesnoradio
+    show if:
+      variable: dayleader_response
+      is: False
+  - Reasons for not approving: dayleader_response_reasons
+    input type: area
+    rows: 10
+    show if: dayleader_response_reasons_yes
 ---
 role: caseworker #dayleader -- change when done!
 question: |
   Waiver and Declaration of Finances as signed by the principal.
 subquestion: |
-  Please sign indicating that you are a witness for the principal's review of the waiver and declaration of finances form. 
+  Please sign below by entering your initials to indicate that you are a witness for the principal's review of the waiver and declaration of finances form. 
   
   ${ SLSWaiverFinancesForm }
 
-signature: caseworker_signature    
+fields:
+  - signature: caseworker_signature    
 ---
 attachment:
   - name: Document
@@ -605,12 +629,12 @@ attachment:
 
       Completion of this form does not guarantee that Student Legal Services of Edmonton will assist me. 
 
-      ${principal.waiversignature}
+      Principal signature: ${principal.waiversignature}
      
       DECLARATION OF FINANCES
       I hereby declare the information provided to Student Legal Services of Edmonton pertaining to monthly income, assets, liabilities and financial circumstances is true. I understand that failure to provide full disclosure may adversely affect the outcome of the services provided and may result in Student Legal Services of Edmonton discontinuing to provide further services.
 
-      ${principal.financessignature}
+      Principal signature: ${principal.financessignature}
 ---
 attachment:
   - name: Document
@@ -632,7 +656,7 @@ attachment:
 
       My decision to enter/change my plea was made freely and voluntarily.
 
-     ${principal.guiltypleasignature}
+     Principal signature: ${principal.guiltypleasignature}
 ---
 continue button field: email_button
 question: Please get your principal to sign the waiver and declaration of finances.
@@ -700,7 +724,21 @@ fields:
     show if: witness2_response
 ---
 question: Would the principal like to sign a guilty plea waiver?
-subquestion: Add here some info about what the guilty plea waiver is that the caseworker can read out.
+subquestion: |
+  For reference, the guilty plea waiver reads as follows:
+  
+  I wish to enter/change my pleas on the charge(s) ___________________________ from not guilty to guilty. In accordance with s.606(1.1) of the Criminal Code of Canada. I have been advised by Student Legal Services of Edmonton of the nature and consequences of such an action. 
+  
+  1.	I Understand that by entering a plea of guilty I am giving up my right to have a trial
+
+  2.	I understand that entering of a guilty plea is final and cannot be changed later.
+
+  3.	I understand that by entering a plea of guilty I am admitting the essential elements of the offence.
+
+  4.	I understand that a plea of guilty may result in a criminal record which may affect my ability to get certain jobs and travel to other countries. 
+
+  5.	I understand that the court has complete control over any sentence imposed following the entering of a guilty plea and it is not bound by any agreement made between Student Legal Services of Edmonton and the Prosecutor. No representation and/or guarantees have been made by Student Legal Services of Edmonton. 
+
 yesno: guilty_plea_response
 ---
 continue button field: email_button_guiltyplea
@@ -724,15 +762,19 @@ subquestion: |
   5. I understand that the Court has complete control over any sentence imposed following the entering of a guilty plea and it is not bound by any agreement made between Student Legal Services of Edmonton and the Prosecutor. No representation and/or guarantees have been made by Student Legal Services of Edmonton.
 
   My decision to enter/change my plea was made freely and voluntarily.
+  
+  Please sign below by entering your initials.
 
-signature: principal.guiltypleasignature
+fields:
+  - signature: principal.guiltypleasignature
 ---
 role: caseworker
 question: |
   Guilty Plea Waiver as signed by the principal.
 subquestion: |
-  Please sign indicating that you are a witness for the principal's guilty plea waiver. 
+  Please sign below by entering your initials to indicate that you are a witness for the principal's guilty plea waiver. 
   
   ${ SLSGuiltyPleaForm }
 
-signature: caseworker_signature_guiltyplea
+fields:
+  - signature: caseworker_signature_guiltyplea
