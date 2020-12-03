@@ -82,8 +82,9 @@ attachments:
     pdf template file: SLS_Crim_Fillable_Form.pdf
     variable name: Final_document
     skip undefined: True
+    editable: False
     fields:  
-      - File Number: "something"
+      - File Number: ${ file_number }
       - Interview Date: ${ date_of_filing }
       - Shift Code: ${ shift_code } 
       - Caseworker Name: ${ user_name }
