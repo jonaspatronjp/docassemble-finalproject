@@ -15,8 +15,8 @@ code: |
   dayleader_emails = ["law589.group1@gmail.com", "law589.group1@gmail.com", "law589.group1@gmail.com", "law589.group1@gmail.com"]
   #gmail password: Law589group1
   #docassemble password: Michelin2
-  caseworker_emails = ["patron@ualberta.ca", "brgauche@ualberta.ca", "chase3@ualberta.ca", "klug@ualberta.ca", "bgschult@ualberta.ca"]
-  
+  caseworker_emails = ["patron@ualberta.ca", "brgauche@ualberta.ca", "chase3@ualberta.ca", "klug@ualberta.ca", "bgschult@ualberta.ca", "jmorris@ualberta.ca"]
+  caseworker_email = user_info().email
   for i in range(len(dayleader_names)):
     if dayleader_name == dayleader_names[i]:
       dayleader_email = dayleader_emails[i]
@@ -497,10 +497,10 @@ code: |
   request_notification_sent = send_email(to=principal_email, template=request_notification)
 ---
 code: |
-  response_notification_sent = send_email(to=user_info().email, template=response_notification)
+  response_notification_sent = send_email(to=caseworker_email, template=response_notification)
 ---
 code: |
-  dayleader_approval_email_sent = send_email(to=dayleader_email, template=response_notification)
+  dayleader_approval_email_sent = send_email(to=dayleader_email, template=dayleader_approval_email)
 ---
 code: |
   guiltyplea_email_sent = send_email(to=principal_email, template=guiltyplea_email)
